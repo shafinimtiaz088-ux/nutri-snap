@@ -37,7 +37,7 @@ async function createNativeEngine() {
 }
 
 async function createZxingEngine() {
-  if (!globalThis.ZXing) await loadScript('vendor/zxing.min.js');
+  if (!globalThis.ZXing) await loadScript('zxing.min.js');
   const Z = globalThis.ZXing;
   const hints = new Map();
   hints.set(Z.DecodeHintType.POSSIBLE_FORMATS, [

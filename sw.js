@@ -3,22 +3,22 @@
 // Requests to Open Food Facts are NOT cached here; scanned products are kept
 // encrypted in IndexedDB instead, so nothing personal sits in an unencrypted cache.
 
-const CACHE = 'nutrisnap-v1.0.0';
+const CACHE = 'nutrisnap-v1.0.1';
 const APP_SHELL = [
   './',
   './index.html',
   './manifest.json',
-  './css/style.css',
-  './js/app.js',
-  './js/logic.js',
-  './js/crypto.js',
-  './js/storage.js',
-  './js/api.js',
-  './js/scanner.js',
-  './vendor/zxing.min.js',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/apple-touch-icon.png',
+  './style.css',
+  './app.js',
+  './logic.js',
+  './crypto.js',
+  './storage.js',
+  './api.js',
+  './scanner.js',
+  './zxing.min.js',
+  './icon-192.png',
+  './icon-512.png',
+  './apple-touch-icon.png',
 ];
 
 self.addEventListener('install', (event) => {

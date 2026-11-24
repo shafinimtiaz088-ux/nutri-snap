@@ -1,8 +1,8 @@
 // Unit tests for the API client (with a fake fetch) and the encryption helpers.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { fetchProduct, LookupError } from '../js/api.js';
-import { deriveKeys, encryptJSON, decryptJSON, makeCheck, verifyCheck, recordId, randomBytes } from '../js/crypto.js';
+import { fetchProduct, LookupError } from './api.js';
+import { deriveKeys, encryptJSON, decryptJSON, makeCheck, verifyCheck, recordId, randomBytes } from './crypto.js';
 
 const jsonResponse = (status, body) => ({ status, ok: status >= 200 && status < 300, json: async () => body });
 

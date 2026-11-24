@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
   validateBarcode, hasValidCheckDigit, normaliseProduct, nutrientLevel, nutriScoreInfo,
   findAllergenMatches, tagToLabel, searchHistory, validatePin, safeImageUrl, lockoutDuration, formatAmount,
-} from '../js/logic.js';
+} from './logic.js';
 
 test('valid EAN-13 barcode passes', () => {
   assert.deepEqual(validateBarcode('3017620422003'), { valid: true, code: '3017620422003', error: null });

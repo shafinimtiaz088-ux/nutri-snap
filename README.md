@@ -30,7 +30,6 @@ CS32005 Mobile Application Development, University of Dundee.
 Camera and service workers only work on `localhost` or HTTPS.
 
 ```bash
-cd nutrisnap
 python3 -m http.server 8080      # or: npx serve .
 ```
 Open http://localhost:8080. In Chrome DevTools, press Ctrl+Shift+M to see it as a phone.
@@ -77,19 +76,22 @@ Backup if the camera fails: *Scan from a photo* or type the barcode.
 
 ## Project structure
 
+All files are in one folder (no sub-folders), so uploading to GitHub through the website is simple.
+
 ```
 index.html          all screens (single-page app)
-css/style.css       mobile-first styles, dark mode, accessibility modes
-js/app.js           screens, navigation, events
-js/logic.js         pure functions (validation, parsing, allergens, thresholds); unit tested
-js/api.js           Open Food Facts client (timeout, error types); unit tested
-js/crypto.js        PBKDF2 / AES-GCM / HMAC with Web Crypto; unit tested
-js/storage.js       IndexedDB, encrypted records
-js/scanner.js       camera + BarcodeDetector / ZXing
+style.css           mobile-first styles, dark mode, accessibility modes
+app.js              screens, navigation, events
+logic.js            pure functions (validation, parsing, allergens, thresholds); unit tested
+api.js              Open Food Facts client (timeout, error types); unit tested
+crypto.js           PBKDF2 / AES-GCM / HMAC with Web Crypto; unit tested
+storage.js          IndexedDB, encrypted records
+scanner.js          camera + BarcodeDetector / ZXing
 sw.js               service worker (offline)
-manifest.json       install settings and icons
-vendor/zxing.min.js ZXing barcode library (MIT)
-tests/              unit tests (node:test)
+manifest.json       install settings
+*.png               app icons
+zxing.min.js        ZXing barcode library (MIT, see ZXING-LICENSE)
+*.test.js           unit tests (node:test)
 TESTING.md          manual test plan, user testing and bug log templates
 ```
 
