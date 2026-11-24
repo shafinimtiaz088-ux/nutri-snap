@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob: https://images.openfoodfacts.org https://static.openfoodfacts.org; connect-src 'self' https://world.openfoodfacts.org; media-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="NutriSnap: scan a food barcode to see its Nutri-Score, nutrition and allergens.">
+  <meta name="theme-color" content="#17703f">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon-192.png" type="image/png">
+  <!-- iOS: home screen icon and full-screen app mode -->
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="NutriSnap">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>NutriSnap</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="app-bar">
+    <div class="brand"><img src="icon-192.png" alt="" width="28" height="28"> <span>NutriSnap</span></div>
+    <span id="offline-badge" class="offline-badge" hidden>Offline</span>
+    <button id="btn-lock" class="icon-btn" type="button" hidden aria-label="Lock app">
+      <svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Zm-3 8V7a3 3 0 1 1 6 0v3H9Z"/></svg>
+    </button>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <noscript><p class="card">NutriSnap needs JavaScript turned on.</p></noscript>
+
+    <!-- Loading -->
+    <section id="screen-loading" class="screen" aria-busy="true">
+      <p class="center muted">Loading…</p>
+    </section>
+
+    <!-- First run: create PIN -->
+    <section id="screen-setup" class="screen" hidden aria-labelledby="setup-title">
+      <h1 id="setup-title" tabindex="-1">Welcome to NutriSnap</h1>
+      <p>Scan a food barcode to see how healthy it is and whether it contains anything you're allergic to.</p>
+      <div class="card">
+        <h2>Your privacy</h2>
+        <ul class="ticks">
+          <li>No account and no sign-up. Nothing about you leaves this device.</li>
+          <li>Your history and allergies are encrypted with your PIN.</li>
+          <li>Only the barcode number is sent to Open Food Facts to look up a product.</li>
+        </ul>
+      </div>
+      <form id="setup-form" class="card" novalidate>
+        <h2>Create a PIN</h2>
+        <input type="text" name="username" autocomplete="username" value="NutriSnap" class="visually-hidden" tabindex="-1" aria-hidden="true">
+        <label for="setup-pin">New PIN (6 to 12 digits)</label>
+        <input id="setup-pin" type="password" inputmode="numeric" autocomplete="new-password" maxlength="12" required aria-describedby="setup-error">
+        <label for="setup-pin2">Type it again</label>
+        <input id="setup-pin2" type="password" inputmode="numeric" autocomplete="new-password" maxlength="12" required aria-describedby="setup-error">
+        <label class="check"><input id="setup-consent" type="checkbox" required> I understand my data is stored only on this device, and that if I forget my PIN I will need to reset the app.</label>
+        <p id="setup-error" class="field-error" role="alert"></p>
+        <button class="btn primary" type="submit">Create PIN and start</button>
+      </form>
+    </section>
+
+    <!-- Unlock -->
+    <section id="screen-unlock" class="screen" hidden aria-labelledby="unlock-title">
+      <h1 id="unlock-title" tabindex="-1">Unlock NutriSnap</h1>
+      <form id="unlock-form" class="card" novalidate>
+        <input type="text" name="username" autocomplete="username" value="NutriSnap" class="visually-hidden" tabindex="-1" aria-hidden="true">
+        <label for="unlock-pin">Enter your PIN</label>
+        <input id="unlock-pin" type="password" inputmode="numeric" autocomplete="current-password" maxlength="12" required aria-describedby="unlock-error">
+        <p id="unlock-error" class="field-error" role="alert"></p>
+        <button id="unlock-btn" class="btn primary" type="submit">Unlock</button>
+      </form>
+      <button id="btn-forgot" class="btn link" type="button">Forgot your PIN?</button>
+    </section>
+
+    <!-- Scan -->
+    <section id="screen-scan" class="screen" hidden aria-labelledby="scan-title">
+      <h1 id="scan-title" tabindex="-1">Scan a product</h1>
+      <div id="viewfinder" class="viewfinder" hidden>
+        <video id="video" playsinline muted aria-label="Camera preview"></video>
+        <div class="frame" aria-hidden="true"></div>
+        <p class="viewfinder-hint">Hold the barcode inside the box</p>
+      </div>
+      <div class="stack">
+        <button id="btn-start-scan" class="btn primary big" type="button">
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M3 5h2v14H3zm4 0h1v14H7zm3 0h2v14h-2zm4 0h1v14h-1zm3 0h1v14h-1zm3 0h1v14h-1z"/></svg>
+          Start camera
+        </button>
+        <button id="btn-stop-scan" class="btn" type="button" hidden>Stop camera</button>
+        <button id="btn-photo" class="btn secondary" type="button">Scan from a photo</button>
+        <input id="photo-input" class="visually-hidden" type="file" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true">
+      </div>
+
+      <form id="manual-form" class="card" novalidate>
+        <label for="manual-code">Or type the barcode number</label>
+        <div class="row">
+          <input id="manual-code" type="text" inputmode="numeric" autocomplete="off" maxlength="18" aria-describedby="manual-error" placeholder="e.g. 3017620422003">
+          <button class="btn primary" type="submit">Look up</button>
+        </div>
+        <p id="manual-error" class="field-error" role="alert"></p>
+        <button id="btn-example" class="btn link" type="button">Try an example product</button>
+      </form>
+    </section>
+
+    <!-- Product -->
+    <section id="screen-product" class="screen" hidden aria-labelledby="p-name">
+      <button id="btn-back" class="btn link back" type="button">← Back</button>
+      <div id="p-loading" class="card skeleton" hidden aria-live="polite"><p>Looking up product…</p></div>
+      <div id="p-error" class="card" hidden>
+        <h1 id="p-error-title" tabindex="-1"></h1>
+        <p id="p-error-text"></p>
+        <div class="stack">
+          <button id="btn-retry" class="btn primary" type="button">Try again</button>
+          <button id="btn-scan-another" class="btn" type="button">Scan another product</button>
+        </div>
+      </div>
+      <article id="p-content" hidden>
+        <div id="allergy-alert" class="alert" role="alert" hidden></div>
+        <div class="product-head">
+          <img id="p-img" alt="" width="96" height="96" decoding="async">
+          <div>
+            <h1 id="p-name" tabindex="-1"></h1>
+            <p id="p-brand" class="muted"></p>
+            <p id="p-code" class="muted small"></p>
+          </div>
+        </div>
+        <section class="card" aria-labelledby="ns-title">
+          <h2 id="ns-title">Nutri-Score</h2>
+          <div id="p-nutriscore"></div>
+        </section>
+        <section class="card" aria-labelledby="nut-title">
+          <h2 id="nut-title">Nutrition per 100 g</h2>
+          <ul id="p-nutrients" class="nutrients"></ul>
+          <p class="muted small">Low, medium and high use UK Food Standards Agency guidelines.</p>
+        </section>
+        <section class="card" aria-labelledby="al-title">
+          <h2 id="al-title">Allergens</h2>
+          <p id="p-allergens"></p>
+          <p id="p-traces" class="muted"></p>
+        </section>
+        <section class="card">
+          <details>
+            <summary>Ingredients</summary>
+            <p id="p-ingredients"></p>
+          </details>
+        </section>
+        <p id="p-saved" class="muted small"></p>
+        <div class="stack">
+          <button id="btn-scan-next" class="btn primary" type="button">Scan another product</button>
+          <button id="btn-delete-item" class="btn danger-outline" type="button">Remove from history</button>
+        </div>
+        <p class="muted small">Product data from Open Food Facts (ODbL licence), added by volunteers. It may be incomplete, so always check the packaging if you have an allergy.</p>
+      </article>
+    </section>
+
+    <!-- History -->
+    <section id="screen-history" class="screen" hidden aria-labelledby="history-title">
+      <h1 id="history-title" tabindex="-1">History</h1>
+      <label for="history-search" class="visually-hidden">Search history</label>
+      <input id="history-search" type="search" placeholder="Search by name, brand or barcode" autocomplete="off">
+      <p id="history-count" class="muted small" aria-live="polite"></p>
+      <ul id="history-list" class="history-list"></ul>
+      <div id="history-empty" class="card center" hidden>
+        <p>No products yet. Products you scan are saved here and still work offline.</p>
+        <button id="btn-history-scan" class="btn primary" type="button">Scan a product</button>
+      </div>
+    </section>
+
+    <!-- Profile -->
+    <section id="screen-profile" class="screen" hidden aria-labelledby="profile-title">
+      <h1 id="profile-title" tabindex="-1">Profile</h1>
+
+      <form id="allergy-form" class="card">
+        <fieldset>
+          <legend><h2>My allergies</h2></legend>
+          <p class="muted small">We'll warn you when a product contains or may contain these. Saved encrypted on this device.</p>
+          <div id="allergy-options" class="check-grid"></div>
+        </fieldset>
+      </form>
+
+      <section class="card" aria-labelledby="display-title">
+        <h2 id="display-title">Display</h2>
+        <label class="switch"><input id="opt-large-text" type="checkbox"> <span>Larger text</span></label>
+        <label class="switch"><input id="opt-high-contrast" type="checkbox"> <span>High contrast</span></label>
+      </section>
+
+      <section class="card" aria-labelledby="security-title">
+        <h2 id="security-title">Security</h2>
+        <p class="muted small">NutriSnap locks itself after 2 minutes in the background.</p>
+        <button id="btn-lock-now" class="btn" type="button">Lock now</button>
+        <details>
+          <summary>Change PIN</summary>
+          <form id="pin-form" novalidate>
+            <input type="text" name="username" autocomplete="username" value="NutriSnap" class="visually-hidden" tabindex="-1" aria-hidden="true">
+            <label for="pin-old">Current PIN</label>
+            <input id="pin-old" type="password" inputmode="numeric" autocomplete="current-password" maxlength="12">
+            <label for="pin-new">New PIN</label>
+            <input id="pin-new" type="password" inputmode="numeric" autocomplete="new-password" maxlength="12">
+            <label for="pin-new2">Type the new PIN again</label>
+            <input id="pin-new2" type="password" inputmode="numeric" autocomplete="new-password" maxlength="12">
+            <p id="pin-error" class="field-error" role="alert"></p>
+            <button class="btn primary" type="submit">Change PIN</button>
+          </form>
+        </details>
+      </section>
+
+      <section class="card" aria-labelledby="data-title">
+        <h2 id="data-title">Your data</h2>
+        <button id="btn-clear-history" class="btn" type="button">Clear scan history</button>
+        <button id="btn-delete-all" class="btn danger" type="button">Delete all my data</button>
+      </section>
+
+      <p class="muted small center">NutriSnap v1.0 · Product data © Open Food Facts contributors (ODbL)</p>
+    </section>
+  </main>
+
+  <nav id="tabbar" class="tabbar" aria-label="Main" hidden>
+    <a href="#/scan" data-tab="scan">
+      <svg aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M4 4h4v2H6v2H4zm12 0h4v4h-2V6h-2zM4 16h2v2h2v2H4zm14 2v-2h2v4h-4v-2zM7 8h1v8H7zm3 0h2v8h-2zm3 0h1v8h-1zm3 0h1v8h-1z"/></svg>
+      <span>Scan</span></a>
+    <a href="#/history" data-tab="history">
+      <svg aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M13 3a9 9 0 0 0-9 9H1l4 4 4-4H6a7 7 0 1 1 2.05 4.95l-1.42 1.42A9 9 0 1 0 13 3Zm-1 5v5l4.25 2.52.77-1.28-3.52-2.09V8z"/></svg>
+      <span>History</span></a>
+    <a href="#/profile" data-tab="profile">
+      <svg aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5Z"/></svg>
+      <span>Profile</span></a>
+  </nav>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <dialog id="confirm-dialog" aria-labelledby="confirm-title">
+    <form method="dialog">
+      <h2 id="confirm-title"></h2>
+      <p id="confirm-text"></p>
+      <div class="row end">
+        <button class="btn" value="cancel">Cancel</button>
+        <button id="confirm-ok" class="btn danger" value="ok">Confirm</button>
+      </div>
+    </form>
+  </dialog>
+</body>
+</html>
