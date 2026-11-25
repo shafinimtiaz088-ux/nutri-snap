@@ -396,8 +396,9 @@ function renderHistory() {
       el('span', { class: 'h-text' },
         el('span', { class: 'h-name', text: p.name }),
         el('span', { class: 'h-meta', text: [p.brand, new Date(p.savedAt).toLocaleDateString('en-GB')].filter(Boolean).join(' · ') }),
-        flag ? el('span', { class: 'h-flag', text: `⚠ ${flag}` }) : ''));
-    btn.setAttribute('aria-label', [p.name, p.brand, info.label, flag].filter(Boolean).join('. '));
+        flag ? el('span', { class: 'h-flag', text: `⚠ ${flag}` }) : '',
+        // Screen readers hear the visible text plus the Nutri-Score (WCAG 2.5.3 Label in Name).
+        el('span', { class: 'visually-hidden', text: `. ${info.label}` })));
     return el('li', {}, btn);
   }));
 }

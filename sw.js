@@ -3,7 +3,7 @@
 // Requests to Open Food Facts are NOT cached here; scanned products are kept
 // encrypted in IndexedDB instead, so nothing personal sits in an unencrypted cache.
 
-const CACHE = 'nutrisnap-v1.0.1';
+const CACHE = 'nutrisnap-v1.0.2';
 const APP_SHELL = [
   './',
   './index.html',
